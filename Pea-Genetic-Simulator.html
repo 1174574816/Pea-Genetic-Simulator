@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>豌豆遗传密码模拟器 - 孟德尔3:1遗传定律</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f9fc;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #4CAF50;
+        }
+        
+        h1 {
+            color: #2E7D32;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 18px;
+        }
+        
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .control-panel {
+            flex: 1;
+            min-width: 300px;
+            background-color: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .simulation-area {
+            flex: 2;
+            min-width: 500px;
+            background-color: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        h2 {
+            color: #388E3C;
+            margin-bottom: 20px;
+            font-size: 22px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        input, select, button {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+        }
+        
+        input[type="number"] {
+            background-color: #f9f9f9;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-top: 5px;
+        }
+        
+        button:hover {
+            background-color: #388E3C;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .button-group button {
+            flex: 1;
+        }
+        
+        #resetBtn {
+            background-color: #f44336;
+        }
+        
+        #resetBtn:hover {
+            background-color: #d32f2f;
+        }
+        
+        #pauseBtn {
+            background-color: #FF9800;
+        }
+        
+        #pauseBtn:hover {
+            background-color: #F57C00;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        .tall-color {
+            background-color: #4CAF50;
+        }
+        
+        .short-color {
+            background-color: #FF9800;
+        }
+        
+        .theory-color {
+            background-color: #2196F3;
+            border: 1px dashed #1565C0;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .stat-box {
+            background-color: #f0f7f0;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2E7D32;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .chart-container {
+            margin-top: 25px;
+            position: relative;
+            height: 400px;
+        }
+        
+        .explanation {
+            background-color: #e8f5e9;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            border-left: 5px solid #4CAF50;
+        }
+        
+        .explanation h3 {
+            color: #2E7D32;
+            margin-bottom: 15px;
+        }
+        
+        .explanation p {
+            margin-bottom: 10px;
+        }
+        
+        .experiment-log {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 14px;
+            border: 1px solid #eee;
+        }
+        
+        .log-entry {
+            padding: 5px 0;
+            border-bottom: 1px dashed #ddd;
+        }
+        
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #777;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .control-panel, .simulation-area {
+                min-width: 100%;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .chart-container {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>豌豆遗传密码模拟器</h1>
+        <p class="subtitle">用数学解开孟德尔3:1遗传定律</p>
+    </header>
+    
+    <div class="container">
+        <div class="control-panel">
+            <h2>实验控制</h2>
+            
+            <div class="input-group">
+                <label for="generations">模拟代数/次数：</label>
+                <input type="number" id="generations" min="10" max="500" value="100">
+            </div>
+            
+            <div class="input-group">
+                <label for="speed">模拟速度：</label>
+                <select id="speed">
+                    <option value="500">慢速</option>
+                    <option value="200" selected>中速</option>
+                    <option value="50">快速</option>
+                    <option value="10">极速</option>
+                </select>
+            </div>
+            
+            <div class="button-group">
+                <button id="startBtn">开始模拟</button>
+                <button id="pauseBtn">暂停/继续</button>
+                <button id="resetBtn">重置实验</button>
+            </div>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color tall-color"></div>
+                    <span>高茎豌豆 (AA/Aa)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color short-color"></div>
+                    <span>矮茎豌豆 (aa)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color theory-color"></div>
+                    <span>理论比例 (3:1)</span>
+                </div>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-value" id="tallCount">0</div>
+                    <div class="stat-label">高茎数量</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="shortCount">0</div>
+                    <div class="stat-label">矮茎数量</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="tallRatio">0%</div>
+                    <div class="stat-label">高茎比例</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="shortRatio">0%</div>
+                    <div class="stat-label">矮茎比例</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="simulation-area">
+            <h2>遗传比例动态收敛图</h2>
+            <div class="chart-container">
+                <canvas id="geneticsChart"></canvas>
+            </div>
+            
+            <div class="experiment-log">
+                <h3>实验记录</h3>
+                <div id="logEntries">
+                    <div class="log-entry">等待实验开始...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="explanation">
+        <h3>实验原理说明</h3>
+        <p>1. 本实验模拟孟德尔豌豆杂交实验：杂合子高茎豌豆 (Aa) × 杂合子高茎豌豆 (Aa)。</p>
+        <p>2. 根据孟德尔遗传定律，子代基因型比例应为：AA(1/4) : Aa(1/2) : aa(1/4)。</p>
+        <p>3. 由于A为显性基因，AA和Aa均表现为高茎，aa表现为矮茎，所以高茎:矮茎 = 3:1。</p>
+        <p>4. 通过多次随机模拟，实验数据将逐渐收敛于理论值3:1，验证孟德尔定律的数学本质。</p>
+    </div>
+    
+    <footer>
+        <p>豌豆的遗传密码 - 用数学解开孟德尔定律 | 初中生物+数学跨学科教学模拟器</p>
+        <p>© 2023 跨学科教育研究 | 数据模拟遵循概率原理</p>
+    </footer>
+
+    <script>
+        // 全局变量
+        let chart;
+        let simulationInterval;
+        let isPaused = false;
+        let isRunning = false;
+        let currentGeneration = 0;
+        let tallCount = 0;
+        let shortCount = 0;
+        let tallRatios = [];
+        let shortRatios = [];
+        let generationsData = [];
+        
+        // 初始化图表
+        function initChart() {
+            const ctx = document.getElementById('geneticsChart').getContext('2d');
+            
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: '高茎比例 (实验)',
+                            data: [],
+                            borderColor: '#4CAF50',
+                            backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.2
+                        },
+                        {
+                            label: '矮茎比例 (实验)',
+                            data: [],
+                            borderColor: '#FF9800',
+                            backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.2
+                        },
+                        {
+                            label: '理论高茎比例 (75%)',
+                            data: [],
+                            borderColor: '#2196F3',
+                            backgroundColor: 'transparent',
+                            borderWidth: 1.5,
+                            borderDash: [5, 5],
+                            fill: false,
+                            pointRadius: 0
+                        },
+                        {
+                            label: '理论矮茎比例 (25%)',
+                            data: [],
+                            borderColor: '#2196F3',
+                            backgroundColor: 'transparent',
+                            borderWidth: 1.5,
+                            borderDash: [5, 5],
+                            fill: false,
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '实验次数/代数',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '比例 (%)',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            min: 0,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 12
+                                },
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y.toFixed(1)}%`;
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 300
+                    }
+                }
+            });
+        }
+        
+        // 模拟一次豌豆杂交
+        function simulatePeaCross() {
+            // 模拟父母各产生一个配子（A或a，概率各50%）
+            const parent1 = Math.random() < 0.5 ? 'A' : 'a';
+            const parent2 = Math.random() < 0.5 ? 'A' : 'a';
+            
+            // 确定子代基因型
+            const genotype = parent1 + parent2;
+            
+            // 判断表现型：只要有一个A就是高茎，否则是矮茎
+            if (genotype.includes('A')) {
+                tallCount++;
+            } else {
+                shortCount++;
+            }
+            
+            currentGeneration++;
+            
+            // 计算当前比例
+            const total = tallCount + shortCount;
+            const tallRatio = (tallCount / total) * 100;
+            const shortRatio = (shortCount / total) * 100;
+            
+            // 记录数据
+            tallRatios.push(tallRatio);
+            shortRatios.push(shortRatio);
+            generationsData.push(currentGeneration);
+            
+            // 更新统计数据
+            document.getElementById('tallCount').textContent = tallCount;
+            document.getElementById('shortCount').textContent = shortCount;
+            document.getElementById('tallRatio').textContent = tallRatio.toFixed(1) + '%';
+            document.getElementById('shortRatio').textContent = shortRatio.toFixed(1) + '%';
+            
+            // 更新图表
+            updateChart();
+            
+            // 记录实验日志（每10次记录一次）
+            if (currentGeneration % 10 === 0 || currentGeneration === 1) {
+                addLogEntry(`第 ${currentGeneration} 次杂交: 高茎 ${tallCount} 株, 矮茎 ${shortCount} 株, 比例 ${tallRatio.toFixed(1)}% : ${shortRatio.toFixed(1)}%`);
+            }
+            
+            return genotype;
+        }
+        
+        // 更新图表数据
+        function updateChart() {
+            // 限制显示的数据点数量，避免图表过于密集
+            const maxDisplayPoints = 50;
+            let displayStep = 1;
+            
+            if (generationsData.length > maxDisplayPoints) {
+                displayStep = Math.ceil(generationsData.length / maxDisplayPoints);
+            }
+            
+            const displayGenerations = generationsData.filter((_, index) => index % displayStep === 0);
+            const displayTallRatios = tallRatios.filter((_, index) => index % displayStep === 0);
+            const displayShortRatios = shortRatios.filter((_, index) => index % displayStep === 0);
+            
+            // 生成理论比例数据
+            const theoryTallData = displayGenerations.map(() => 75);
+            const theoryShortData = displayGenerations.map(() => 25);
+            
+            chart.data.labels = displayGenerations;
+            chart.data.datasets[0].data = displayTallRatios;
+            chart.data.datasets[1].data = displayShortRatios;
+            chart.data.datasets[2].data = theoryTallData;
+            chart.data.datasets[3].data = theoryShortData;
+            
+            chart.update();
+        }
+        
+        // 添加实验日志
+        function addLogEntry(message) {
+            const logEntries = document.getElementById('logEntries');
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.textContent = message;
+            
+            logEntries.prepend(logEntry);
+            
+            // 限制日志条目数量
+            if (logEntries.children.length > 10) {
+                logEntries.removeChild(logEntries.lastChild);
+            }
+        }
+        
+        // 开始模拟
+        function startSimulation() {
+            if (isRunning) return;
+            
+            const totalGenerations = parseInt(document.getElementById('generations').value);
+            const speed = parseInt(document.getElementById('speed').value);
+            
+            isRunning = true;
+            isPaused = false;
+            document.getElementById('startBtn').textContent = '模拟中...';
+            document.getElementById('startBtn').disabled = true;
+            
+            addLogEntry(`开始模拟实验，计划进行 ${totalGenerations} 次杂交...`);
+            
+            simulationInterval = setInterval(() => {
+                if (!isPaused) {
+                    simulatePeaCross();
+                    
+                    // 检查是否完成所有代数
+                    if (currentGeneration >= totalGenerations) {
+                        stopSimulation();
+                        addLogEntry(`模拟实验完成！最终比例：高茎 ${tallCount} 株, 矮茎 ${shortCount} 株, 比例 ${(tallCount/(tallCount+shortCount)*100).toFixed(1)}% : ${(shortCount/(tallCount+shortCount)*100).toFixed(1)}%`);
+                    }
+                }
+            }, speed);
+        }
+        
+        // 停止模拟
+        function stopSimulation() {
+            clearInterval(simulationInterval);
+            isRunning = false;
+            document.getElementById('startBtn').textContent = '开始模拟';
+            document.getElementById('startBtn').disabled = false;
+        }
+        
+        // 暂停/继续模拟
+        function togglePause() {
+            if (!isRunning) return;
+            
+            isPaused = !isPaused;
+            document.getElementById('pauseBtn').textContent = isPaused ? '继续模拟' : '暂停模拟';
+            
+            if (isPaused) {
+                addLogEntry('模拟已暂停');
+            } else {
+                addLogEntry('模拟已继续');
+            }
+        }
+        
+        // 重置实验
+        function resetExperiment() {
+            stopSimulation();
+            
+            currentGeneration = 0;
+            tallCount = 0;
+            shortCount = 0;
+            tallRatios = [];
+            shortRatios = [];
+            generationsData = [];
+            
+            // 重置统计数据
+            document.getElementById('tallCount').textContent = '0';
+            document.getElementById('shortCount').textContent = '0';
+            document.getElementById('tallRatio').textContent = '0%';
+            document.getElementById('shortRatio').textContent = '0%';
+            
+            // 重置图表
+            chart.data.labels = [];
+            chart.data.datasets[0].data = [];
+            chart.data.datasets[1].data = [];
+            chart.data.datasets[2].data = [];
+            chart.data.datasets[3].data = [];
+            chart.update();
+            
+            // 重置日志
+            document.getElementById('logEntries').innerHTML = '<div class="log-entry">实验已重置，等待开始...</div>';
+            
+            // 重置按钮状态
+            isPaused = false;
+            document.getElementById('pauseBtn').textContent = '暂停/继续';
+            
+            addLogEntry('实验已重置，可以重新开始模拟');
+        }
+        
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化图表
+            initChart();
+            
+            // 添加初始理论数据
+            updateChart();
+            
+            // 绑定按钮事件
+            document.getElementById('startBtn').addEventListener('click', startSimulation);
+            document.getElementById('pauseBtn').addEventListener('click', togglePause);
+            document.getElementById('resetBtn').addEventListener('click', resetExperiment);
+            
+            // 添加键盘快捷键
+            document.addEventListener('keydown', function(event) {
+                if (event.key === ' ' || event.key === 'Spacebar') {
+                    event.preventDefault();
+                    togglePause();
+                }
+                
+                if (event.key === 'r' || event.key === 'R') {
+                    if (event.ctrlKey) {
+                        event.preventDefault();
+                        resetExperiment();
+                    }
+                }
+            });
+            
+            // 初始说明
+            addLogEntry('豌豆遗传模拟器已准备就绪。点击"开始模拟"按钮开始实验。');
+            addLogEntry('模拟原理：杂合子高茎豌豆(Aa) × 杂合子高茎豌豆(Aa)');
+            addLogEntry('理论预期：高茎:矮茎 = 3:1 (75% : 25%)');
+        });
+    </script>
+</body>
+</html>
